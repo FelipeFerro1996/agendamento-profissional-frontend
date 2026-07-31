@@ -6,8 +6,19 @@
       </q-card-section>
 
       <q-card-section>
-        <q-input v-model="email" label="Email" type="email" />
-        <q-input v-model="password" label="Senha" type="password" class="q-mt-md" />
+        <q-input 
+          v-model="email" 
+          label="Email" 
+          type="email"
+          :error="!!errors.email"
+          :error-message="errors.email?.[0] ?? ''" 
+        />
+        <q-input 
+          v-model="password" 
+          label="Senha" 
+          type="password" 
+          class="q-mt-md"
+        />
       </q-card-section>
 
       <q-card-actions align="right">
@@ -22,6 +33,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from 'src/composables/useAuth'
+import { useQuasar } from 'quasar'
+import axios from 'axios'
+import { type ValidationErrorResponse } from 'src/composables/useApi'
+
+const $q = useQuasar()
+const errors = ref<Record<string, string[]>>({})
 
 const email = ref('')
 const password = ref('')
@@ -37,10 +54,27 @@ const handleLogin = async () => {
         await login(email.value, password.value)
 
         await router.push('/')
-    } catch (error) {
-        console.error(error)
-        alert('Erro ao fazer o login')
-    }finally {
+        $q.notify({
+          type: 'positive',
+          message: "Login realizado com sucesso"
+        })
+    } catch (error: unknown) {
+        if (axios.isAxiosError<ValidationErrorResponse>(error)) {
+
+          if (error.response?.status === 422) {
+            errors.value = error.response.data.errors ?? {};
+            return;
+          }else{
+
+            $q.notify({
+              type: 'negative',
+              message: error.response?.data.message ?? 'Ocorreu um erro.'
+            });
+            
+          }
+
+        }
+    } finally {
         loading.value = false
     }
 }

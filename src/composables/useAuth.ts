@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 import { api } from 'boot/axios'
 import axios from 'axios'
+import { useApi } from './useApi'
+import { type AuthResponse } from 'src/types/auth'
 
 interface User {
   id: number
@@ -9,14 +11,16 @@ interface User {
 }
 
 const user = ref<User | null>(null)
+const { post } = useApi()
 
 export function useAuth() {
 
   const login = async (email: string, password: string) => {
-    const { data } = await api.post('/login', { email, password })
+    // const { data } = await api.post('/login', { email, password })
+    const login = await post<AuthResponse>('/login', { email, password })
 
-    localStorage.setItem('token', data.token)
-    user.value = data.user
+    localStorage.setItem('token', login.token)
+    user.value = login.user
   }
 
   const fetchUser = async () => {

@@ -33,7 +33,7 @@ const emit = defineEmits<{
             label="E-mail"
             outlined
             dense
-             :error="!!errors.email"
+            :error="!!errors.email"
             :error-message="errors.email?.[0]"
         />
 

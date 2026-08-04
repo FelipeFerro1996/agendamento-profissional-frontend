@@ -52,6 +52,14 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         component: () => import('pages/MedicalSessionsPage.vue'),
+        name: 'medical-sessions-list',
+        props: true
+      },
+      {
+        path: 'create',
+        component: () => import('pages/MedicalSessionsCreatePage.vue'),
+        name:'medical-session-create',
+        props: true
       },
     ],
   },

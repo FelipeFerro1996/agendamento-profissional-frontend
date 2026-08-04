@@ -61,7 +61,7 @@ const linksList: EssentialLinkProps[] = [
     title: 'Agenda',
     caption: 'Agendamentos',
     icon: 'event',
-    to: 'medical_sessions'
+    to: '/medical_sessions'
   }
 ]
 

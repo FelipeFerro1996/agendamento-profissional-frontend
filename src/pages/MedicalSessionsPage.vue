@@ -1,26 +1,38 @@
 <script setup lang="ts">
+import { date } from 'quasar';
 import { useMedicalSessions } from 'src/composables/useMedicalSessions';
-import { formatarData } from 'src/utils/dateUtils';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
+const router = useRouter()
+const route = useRoute()
 
 const { medical_sessions, fetchMedicalSessions, loading } = useMedicalSessions()
-const data_selecionada = ref(new Date)
+const data_selecionada = ref(
+    (route.query.session_date as string) ?? date.formatDate(new Date, 'YYYY-MM-DD')
+)
 
 onMounted(async () => {
-    const data = formatarData(data_selecionada.value, 'YYYY-MM-DD')
-    await fetchMedicalSessions(data)
+    await carregaAgenda()
+})
+
+async function carregaAgenda(){
+    await fetchMedicalSessions(data_selecionada.value)
+}
+
+watch(data_selecionada, async () => {
+    await carregaAgenda()
 })
 
 const horarios = Array.from(
   { length: 11 },
-  (_, i) => `${String(i + 8).padStart(2, '0')}:00:00`
+  (_, i) => `${String(i + 8).padStart(2, '0')}:00`
 )
 
 const sessoesPorHorario = computed(() => {
   return Object.fromEntries(
     medical_sessions.value.map(session => [
-      session.session_time.substring(0, 8),
+      session.session_time.substring(0, 5),
       session
     ])
   )
@@ -33,6 +45,16 @@ const agenda = computed(() => {
     ocupado: !!sessoesPorHorario.value[horario]
   }))
 })
+
+const novoAgendamento = (item: string) => {
+    void router.push({
+        name: 'medical-session-create',
+        query: {
+            date: data_selecionada.value,
+            time: item
+        }
+    })
+}
 
 </script>
 
@@ -50,6 +72,15 @@ const agenda = computed(() => {
                 label="Novo Agendamento"
             />
 
+        </div>
+
+        <div class="row items-center justify-between q-mb-md">
+            <q-input
+                v-model="data_selecionada"
+                type="date"
+                outlined
+                label="Data"
+            />
         </div>
 
         <q-list bordered separator v-if="!loading">
@@ -74,12 +105,19 @@ const agenda = computed(() => {
                     </q-item-label>
                 </q-item-section>
 
-                <q-item-section
+                <q-item
                     v-else
-                    class="text-grey"
+                    clickable 
+                    v-ripple
+                    @click="novoAgendamento(item.horario)"
                 >
-                    Horário livre
-                </q-item-section>
+                    <q-item-section
+                        class="text-grey"
+                    >
+                        Horário livre
+                    </q-item-section>
+                </q-item>
+                
             </q-item>
         </q-list>
 

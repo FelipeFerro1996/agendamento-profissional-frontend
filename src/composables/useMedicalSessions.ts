@@ -8,13 +8,15 @@ export function useMedicalSessions(){
     const medical_sessions = ref<MedicalSessions[]>([])
     const loading = ref(false)
 
-    const { get } = useApi()
+    const { get, post } = useApi()
     
     const endpoint = '/medical_sessions'
 
-    const list = (session_date: string = '') => {
-        return get<ApiResponseNotPagination<MedicalSessions>>(`${endpoint}?session_date=${session_date}`)
-    }
+    const list = (session_date: string = '') =>
+        get<ApiResponseNotPagination<MedicalSessions>>(`${endpoint}?session_date=${session_date}`)
+
+    const create = (data: Partial<MedicalSessions>) =>
+        post<MedicalSessions, Partial<MedicalSessions>>(endpoint, data)
 
     const fetchMedicalSessions = async (session_date: string = '') => {
         loading.value = true
@@ -33,6 +35,7 @@ export function useMedicalSessions(){
 
     return {
         fetchMedicalSessions,
+        create,
         medical_sessions,
         loading
     }

@@ -12,16 +12,16 @@ export function useMedicalSessions(){
     
     const endpoint = '/medical_sessions'
 
-    const list = () => {
-        return get<ApiResponseNotPagination<MedicalSessions>>(`${endpoint}`)
+    const list = (session_date: string = '') => {
+        return get<ApiResponseNotPagination<MedicalSessions>>(`${endpoint}?session_date=${session_date}`)
     }
 
-    const fetchMedicalSessions = async () => {
+    const fetchMedicalSessions = async (session_date: string = '') => {
         loading.value = true
 
         try {
             
-            const response = await list()
+            const response = await list(session_date)
             medical_sessions.value = response.data
 
             console.log(medical_sessions)

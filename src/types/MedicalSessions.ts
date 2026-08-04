@@ -1,3 +1,5 @@
+import type { Patient } from "./Patient"
+
 type statusMedicalSession = "scheduled" | "done" | "cancelled"
 
 export interface MedicalSessions{
@@ -11,4 +13,5 @@ export interface MedicalSessions{
     paid_at?: string,
     notes?: Text
     data_formatada?: string
+    patient?: Patient
 }

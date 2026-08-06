@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { date } from 'quasar';
+import { date, useQuasar } from 'quasar';
 import { useMedicalSessions } from 'src/composables/useMedicalSessions';
-import { medicalSessionStatus } from 'src/types/MedicalSessions';
+import { medicalSessionStatus, type StatusMedicalSession } from 'src/types/MedicalSessions';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import type { QTableColumn } from 'quasar'
+import axios from 'axios';
+import type { ValidationErrorResponse } from 'src/composables/useApi';
 
 const router = useRouter()
 const route = useRoute()
+const $q = useQuasar()
 
-const { medical_sessions, fetchMedicalSessions, loading } = useMedicalSessions()
+const { medical_sessions, fetchMedicalSessions, loading, update } = useMedicalSessions()
 const data_selecionada = ref(
     (route.query.session_date as string) ?? date.formatDate(new Date, 'YYYY-MM-DD')
 )
@@ -69,8 +73,6 @@ const getStatusColor = (status?: keyof typeof medicalSessionStatus) => {
         : 'grey'
 }
 
-import type { QTableColumn } from 'quasar'
-
 const columns: QTableColumn[] = [
   {
     name: 'horario',
@@ -104,6 +106,53 @@ const columns: QTableColumn[] = [
     align: 'right'
   }
 ]
+
+async function updateStatus(id: number, status: StatusMedicalSession, descricaoStatus: string){
+    loading.value = true
+
+    try {
+        await update(id, {
+            status
+        })
+        await fetchMedicalSessions(data_selecionada.value)
+        $q.notify({
+            type: 'positive',
+            message: `Status atualizado para ${descricaoStatus}`
+        })
+    } catch (error: unknown) {
+
+        if(axios.isAxiosError<ValidationErrorResponse>(error)){
+            $q.notify({
+                type: 'negative',
+                message: error.response?.data.message ?? 'Erro ao atualizar o status do pedido'
+            })  
+        }else{
+            $q.notify({
+                type: 'negative',
+                message: 'Erro ao atualizar o status do pedido'
+            })    
+        }
+
+
+    }finally {
+        loading.value = false
+    }
+}
+
+const confirmUpdateStatusAgendamento = (id: number, status: StatusMedicalSession) => {
+
+    const descricaoStatus = getStatusLabel(status)
+
+    $q.dialog({
+        title: 'Alterar status',
+        message: `Deseja realmente alterar o status do agendamento para ${descricaoStatus}?`,
+        cancel: true,
+        persistent: true,
+    }).onOk(() => {
+        void updateStatus(id, status, descricaoStatus)
+    })
+
+}
 
 </script>
 
@@ -243,6 +292,7 @@ const columns: QTableColumn[] = [
                         dense
                         color="positive"
                         icon="check"
+                        @click="confirmUpdateStatusAgendamento(props.row.agendamento.id, 'done')"
                     >
                         <q-tooltip>Concluir atendimento</q-tooltip>
                     </q-btn>
@@ -254,6 +304,7 @@ const columns: QTableColumn[] = [
                         dense
                         color="negative"
                         icon="close"
+                        @click="confirmUpdateStatusAgendamento(props.row.agendamento.id, 'cancelled')"
                     >
                         <q-tooltip>Cancelar atendimento</q-tooltip>
                     </q-btn>

@@ -8,7 +8,7 @@ export function useMedicalSessions(){
     const medical_sessions = ref<MedicalSessions[]>([])
     const loading = ref(false)
 
-    const { get, post } = useApi()
+    const { get, post, put } = useApi()
     
     const endpoint = '/medical_sessions'
 
@@ -33,9 +33,13 @@ export function useMedicalSessions(){
         }
     }
 
+    const update = (id: number, data: Partial<MedicalSessions>) =>
+        put<MedicalSessions, Partial<MedicalSessions>>(`${endpoint}/${id}`, data)
+
     return {
         fetchMedicalSessions,
         create,
+        update,
         medical_sessions,
         loading
     }

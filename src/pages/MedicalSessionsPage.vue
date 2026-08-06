@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { date } from 'quasar';
 import { useMedicalSessions } from 'src/composables/useMedicalSessions';
+import { medicalSessionStatus } from 'src/types/MedicalSessions';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -56,6 +57,54 @@ const novoAgendamento = (item: string) => {
     })
 }
 
+const getStatusLabel = (status?: keyof typeof medicalSessionStatus) => {
+    return status 
+        ? medicalSessionStatus[status].label
+        : "Não informado"
+}
+
+const getStatusColor = (status?: keyof typeof medicalSessionStatus) => {
+    return status
+        ? medicalSessionStatus[status].color
+        : 'grey'
+}
+
+import type { QTableColumn } from 'quasar'
+
+const columns: QTableColumn[] = [
+  {
+    name: 'horario',
+    label: 'Horário',
+    field: 'horario',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'paciente',
+    label: 'Paciente',
+    field: row => row.agendamento?.patient?.name ?? '',
+    align: 'left'
+  },
+  {
+    name: 'status',
+    label: 'Status',
+    field: row => row.agendamento?.status ?? '',
+    align: 'center'
+  },
+  {
+    name: 'preco',
+    label: 'Valor',
+    field: row => row.agendamento?.price ?? '',
+    align: 'right'
+  },
+  {
+    name: 'acoes',
+    label: '',
+    field: 'acoes',
+    align: 'right'
+  }
+]
+
 </script>
 
 <template>
@@ -66,60 +115,155 @@ const novoAgendamento = (item: string) => {
                 Agendamentos
             </div>
 
-            <q-btn 
-                color="primary"
-                icon="add"
-                label="Novo Agendamento"
-            />
-
-        </div>
-
-        <div class="row items-center justify-between q-mb-md">
             <q-input
                 v-model="data_selecionada"
                 type="date"
                 outlined
+                dense
                 label="Data"
             />
+
         </div>
 
-        <q-list bordered separator v-if="!loading">
-            <q-item
-                v-for="item in agenda"
-                :key="item.horario"
-            >
-                <q-item-section avatar>
+        <q-table
+            :rows="agenda"
+            :columns="columns"
+            row-key="horario"
+            flat
+            bordered
+            hide-pagination
+            :rows-per-page-options="[0]"
+            class="agenda-table"
+            v-if="!loading"
+        >
+
+            <!-- Horário -->
+            <template #body-cell-horario="props">
+                <q-td :props="props">
                     <q-badge
                         color="primary"
-                        :label="item.horario"
-                    />
-                </q-item-section>
-
-                <q-item-section v-if="item.ocupado">
-                    <q-item-label>
-                        {{ item.agendamento?.patient?.name ?? '' }}
-                    </q-item-label>
-
-                    <q-item-label caption>
-                        {{ item.agendamento?.patient?.phone ?? '' }}
-                    </q-item-label>
-                </q-item-section>
-
-                <q-item
-                    v-else
-                    clickable 
-                    v-ripple
-                    @click="novoAgendamento(item.horario)"
-                >
-                    <q-item-section
-                        class="text-grey"
+                        rounded
                     >
-                        Horário livre
-                    </q-item-section>
-                </q-item>
-                
-            </q-item>
-        </q-list>
+                        {{ props.row.horario }}
+                    </q-badge>
+                </q-td>
+            </template>
+
+            <!-- Paciente -->
+            <template #body-cell-paciente="props">
+                <q-td :props="props">
+
+                <div v-if="props.row.ocupado">
+
+                    <div class="text-weight-medium">
+                    {{ props.row.agendamento.patient.name }}
+                    </div>
+
+                    <div class="text-caption text-grey-7">
+                    {{ props.row.agendamento.patient.phone }}
+                    </div>
+
+                </div>
+
+                <div
+                    v-else
+                    class="text-grey"
+                >
+                    <q-btn
+                        flat
+                        round
+                        dense
+                        color="primary"
+                        icon="add"
+                        @click="novoAgendamento(props.row.horario)"
+                    >
+                        <q-tooltip>Novo agendamento</q-tooltip>
+                    </q-btn>
+                </div>
+
+                </q-td>
+            </template>
+
+            <!-- Status -->
+            <template #body-cell-status="props">
+                <q-td :props="props">
+
+                <q-badge
+                    v-if="props.row.ocupado"
+                    rounded
+                    :color="getStatusColor(props.row.agendamento.status)"
+                >
+                    {{ getStatusLabel(props.row.agendamento.status) }}
+                </q-badge>
+
+                </q-td>
+            </template>
+
+            <!-- Valor -->
+            <template #body-cell-preco="props">
+                <q-td :props="props">
+
+                <span v-if="props.row.ocupado">
+                    R$ {{ Number(props.row.agendamento.price).toFixed(2) }}
+                </span>
+
+                <span
+                    v-else
+                    class="text-grey"
+                >
+                    —
+                </span>
+
+                </q-td>
+            </template>
+
+            <!-- Ações -->
+            <template #body-cell-acoes="props">
+                <q-td
+                :props="props"
+                class="text-right"
+                >
+
+                <div v-if="props.row.ocupado" class="row justify-end no-wrap q-gutter-xs">
+
+                    <q-btn
+                        flat
+                        round
+                        dense
+                        color="primary"
+                        icon="edit"
+                    >
+                        <q-tooltip>Editar</q-tooltip>
+                    </q-btn>
+
+                    <q-btn
+                        v-if="props.row.agendamento.status === 'scheduled'"
+                        flat
+                        round
+                        dense
+                        color="positive"
+                        icon="check"
+                    >
+                        <q-tooltip>Concluir atendimento</q-tooltip>
+                    </q-btn>
+
+                    <q-btn
+                        v-if="props.row.agendamento.status !== 'done'"
+                        flat
+                        round
+                        dense
+                        color="negative"
+                        icon="close"
+                    >
+                        <q-tooltip>Cancelar atendimento</q-tooltip>
+                    </q-btn>
+
+                </div>
+
+                </q-td>
+            </template>
+
+        </q-table>
 
     </q-page>
 </template>

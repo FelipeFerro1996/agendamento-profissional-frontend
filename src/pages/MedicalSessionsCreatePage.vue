@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios';
+import { useQuasar } from 'quasar';
 import MedicalSessionForm from 'src/components/MedicalSessionForm.vue';
 import type { ValidationErrorResponse } from 'src/composables/useApi';
 import { useMedicalSessions } from 'src/composables/useMedicalSessions';
@@ -11,6 +12,7 @@ const route = useRoute()
 const errors = ref<Record<string, string[]>>({})
 const { create } = useMedicalSessions()
 const router = useRouter()
+const $q = useQuasar();
 
 const medical_session = ref<Partial<MedicalSessions>>({
     session_date: route.query.date as string,
@@ -28,6 +30,10 @@ const save = async () => {
             query: {
                 session_date: medical_session.value.session_date
             }
+        })
+        $q.notify({
+            type: "positive",
+            message: "Consulta cadastrada com sucesso!"
         })
     } catch (error: unknown) {
         if(axios.isAxiosError<ValidationErrorResponse>(error)){

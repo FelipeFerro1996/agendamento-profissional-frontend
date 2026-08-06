@@ -1,6 +1,27 @@
 import type { Patient } from "./Patient"
 
-type statusMedicalSession = "scheduled" | "done" | "cancelled"
+export type StatusMedicalSession =
+  | 'scheduled'
+  | 'done'
+  | 'cancelled'
+
+export const medicalSessionStatus = {
+  scheduled: {
+    label: 'Agendado',
+    color: 'primary',
+    icon: 'event'
+  },
+  done: {
+    label: 'Concluído',
+    color: 'positive',
+    icon: 'check_circle'
+  },
+  cancelled: {
+    label: 'Cancelado',
+    color: 'negative',
+    icon: 'cancel'
+  }
+} as const
 
 export interface MedicalSessions{
     id?: number,
@@ -8,7 +29,7 @@ export interface MedicalSessions{
     session_date: string,
     session_time: string,
     price?: number,
-    status?: statusMedicalSession,
+    status?: StatusMedicalSession,
     paid?: boolean,
     paid_at?: string,
     notes?: Text

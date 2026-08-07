@@ -8,3 +8,10 @@ export interface Patient {
   created_at?: string
   updated_at?: string
 }
+
+export interface PatientsFilters {
+  name?: string
+  birth_date?: string
+  phone?: string
+  cpf?: string
+}

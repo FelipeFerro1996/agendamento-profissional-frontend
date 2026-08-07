@@ -1,6 +1,6 @@
 import type { ApiResponse, ApiResponseNotPagination, Pagination } from "src/types/api"
 import { useApi } from "./useApi"
-import type { Patient } from "src/types/Patient"
+import type { Patient, PatientsFilters } from "src/types/Patient"
 import { ref } from "vue"
 
 export function usePatient() {
@@ -11,7 +11,30 @@ export function usePatient() {
 
     const endpoint = '/patients'
 
-    const list = (page = 1) => get<ApiResponse<Pagination<Patient>>>(`${endpoint}?page=${page}`)
+    const list = (page = 1, filters: PatientsFilters) => {
+
+        const params = new URLSearchParams()
+
+        params.set('page', String(page))
+
+        if (filters.name) {
+            params.set('name', filters.name)
+        }
+
+        if (filters.phone) {
+            params.set('phone', filters.phone)
+        }
+
+        if (filters.cpf) {
+            params.set('cpf', filters.cpf)
+        }
+
+        if (filters.birth_date) {
+            params.set('birth_date', filters.birth_date)
+        }
+
+        return get<ApiResponse<Pagination<Patient>>>(`${endpoint}?${params.toString()}`)
+    }
 
     const find = (id: number) => 
         get<ApiResponse<Patient>>(`${endpoint}/${id}`)
@@ -25,10 +48,11 @@ export function usePatient() {
     const remove = (id: number) => 
             del<void>(`${endpoint}/${id}`)
 
-    const fetchPatients = async (page = 1) => {
+    const fetchPatients = async (page = 1, filters: PatientsFilters) => {
+
         loading.value = true
         try {
-            const response = await list(page)
+            const response = await list(page, filters)
 
             patients.value = response.data.data
             pagination.value = response.data                

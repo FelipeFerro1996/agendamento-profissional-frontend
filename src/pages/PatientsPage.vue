@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { usePatient } from 'src/composables/usePatient'
 import { useQuasar, type QTableProps } from 'quasar'
-import { type Patient } from 'src/types/Patient'
+import type { PatientsFilters, Patient } from 'src/types/Patient'
 
 const $q = useQuasar();
 
@@ -23,14 +23,14 @@ const columns = [
 
 const onRequest: QTableProps['onRequest'] = ({ pagination }) => {
   void (async () => {
-    await fetchPatients(pagination.page)
+    await fetchPatients(pagination.page, filters.value)
 
     updatePagination()
   })()
 }
 
 onMounted(async () => {
-  await fetchPatients()
+  await fetchPatients(1, filters.value)
 
   if(pagination.value){
     updatePagination()
@@ -53,7 +53,7 @@ const deletePatient = async (id: number) => {
 
   try{
     await remove(id)
-    await fetchPatients()
+    await fetchPatients(1, filters.value)
     updatePagination()
 
     $q.notify({
@@ -76,13 +76,42 @@ const updatePagination = () => {
   }
 }
 
+const mostrarFiltros = ref(false)
+const filters = ref<PatientsFilters>({
+    name: '',
+    phone: '',
+    cpf: '',
+    birth_date: ''
+})
+
+const buscar = async () => {
+  await fetchPatients(
+    1,
+    filters.value
+  )
+}
+
+const limparFiltros = async () => {
+
+    filters.value = {
+        name: '',
+        cpf: '',
+        phone: '',
+        birth_date: ''
+    }
+
+    await fetchPatients(
+        1,
+        filters.value
+    )
+} 
+
 </script>
 
 <template>
   <q-page class="q-pa-md">
 
     <div class="row items-center justify-between q-mb-md">
-
       <div class="text-h5">
         Pacientes
       </div>
@@ -95,6 +124,121 @@ const updatePagination = () => {
       />
 
     </div>
+
+    <q-expansion-item
+        icon="filter_list"
+        label="Filtros"
+        header-class="text-primary"
+        bordered
+        class="q-mb-md"
+        >
+        <q-card flat>
+            <q-card-section>
+                <div class="row q-col-gutter-sm">
+
+                    <div class="col-12 col-md-6">
+                        <q-input
+                            v-model="filters.name"
+                            outlined
+                            dense
+                            clearable
+                            label="Nome"
+                        />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <q-input
+                            v-model="filters.cpf"
+                            outlined
+                            dense
+                            clearable
+                            label="CPF"
+                        />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <q-input
+                            v-model="filters.phone"
+                            outlined
+                            dense
+                            clearable
+                            label="Telefone"
+                        />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <q-input
+                            v-model="filters.birth_date"
+                            outlined
+                            dense
+                            type="date"
+                            label="Data de nascimento"
+                        />
+                    </div>
+
+                </div>
+
+                <div class="row justify-end q-gutter-sm q-mt-md">
+
+                    <q-btn
+                        color="negative"
+                        icon="clear"
+                        label="Limpar"
+                        @click="limparFiltros"
+                    />
+
+                    <q-btn
+                        unelevated
+                        color="primary"
+                        icon="search"
+                        label="Buscar"
+                        @click="buscar"
+                    />
+
+                </div>
+            </q-card-section>
+        </q-card>
+    </q-expansion-item>
+
+    <q-slide-transition>
+      <div v-show="mostrarFiltros" class="q-mb-md">
+        <div class="row q-col-gutter-sm">
+
+          <div class="col-12 col-md-8">
+            <q-input
+              v-model="filters.name"
+              outlined
+              dense
+              clearable
+              label="Buscar paciente"
+              placeholder="Nome"
+            />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <q-input
+              v-model="filters.birth_date"
+              outlined
+              dense
+              clearable
+              label="Data Paciente"
+              type="date"
+            />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <q-btn
+              color="primary"
+              icon="search"
+              label="Buscar"
+              class="full-width"
+              @click="buscar"
+            />
+          </div>
+
+        </div>
+      </div>
+    </q-slide-transition>
 
     <q-table
       title="Pacientes"

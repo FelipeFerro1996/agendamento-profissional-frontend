@@ -167,7 +167,8 @@ async function updatePagamento(id: number, paid: boolean){
 
     try {
         await update(id, {
-            paid
+            paid,
+            paid_at: date.formatDate(new Date, 'YYYY-MM-DD HH:mm:ss')
         })
         await fetchMedicalSessions(data_selecionada.value)
         $q.notify({
@@ -322,11 +323,32 @@ const alteraPagamaneto = (id:number, pago: boolean) => {
 
             <!-- Pago -->
             <template #body-cell-pago="props">
-                <q-td :props="props">
-                    <q-icon
-                        v-if="props.row.agendamento?.paid" 
-                        name="check" 
-                    />
+                <q-td
+                    :props="props"
+                >
+                    <div v-if="props.row.ocupado">
+                        <q-btn
+                            v-if="props.row.agendamento?.paid"
+                            flat
+                            round
+                            dense
+                            color="positive"
+                            icon="payments"
+                        >
+                            <q-tooltip>Pagamento realizado</q-tooltip>
+                        </q-btn>
+
+                        <q-btn
+                            v-else
+                            flat
+                            round
+                            dense
+                            color="grey"
+                            icon="payments"
+                        >
+                            <q-tooltip>Pagamento pendente</q-tooltip>
+                        </q-btn>
+                    </div>
                 </q-td>
             </template>
 

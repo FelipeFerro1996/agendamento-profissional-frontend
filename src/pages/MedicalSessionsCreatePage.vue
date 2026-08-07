@@ -74,7 +74,8 @@ onMounted(async () => {
 <template>
     <q-page class="q-pa-md">
         <div class="text-h5 q-md-lg">
-            Novo Agendamento
+            <span v-if="route.params.id">Alteração agendamento {{ medical_session.patient?.name ?? '' }} </span>
+            <span v-else>Novo Agendamento</span>
         </div>
 
         <MedicalSessionForm

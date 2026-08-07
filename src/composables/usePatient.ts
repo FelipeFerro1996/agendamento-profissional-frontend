@@ -1,4 +1,4 @@
-import type { ApiResponse, Pagination } from "src/types/api"
+import type { ApiResponse, ApiResponseNotPagination, Pagination } from "src/types/api"
 import { useApi } from "./useApi"
 import type { Patient } from "src/types/Patient"
 import { ref } from "vue"
@@ -38,12 +38,22 @@ export function usePatient() {
         
     }
 
+    const listAllPatients = (name: string = '') => {
+        return get<ApiResponseNotPagination<Patient>>(`${endpoint}?nao_paginar=true&name=${name}`)
+    }
+
+    const fetchAllPatients = async (name: string = '') => {
+        const response = await listAllPatients(name)
+        patients.value = response.data
+    }
+
     return {
         find,
         create,
         update,
         remove,
         fetchPatients,
+        fetchAllPatients,
         patients,
         pagination,
         loading

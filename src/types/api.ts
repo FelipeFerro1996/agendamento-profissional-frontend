@@ -4,6 +4,12 @@ export interface ApiResponse<T> {
     data: T
 }
 
+export interface ApiResponseNotPagination<T> {
+  success: boolean,
+  message: string,
+  data: T[]
+}
+
 export interface Pagination<T> {
   current_page: number
   data: T[]

@@ -56,6 +56,12 @@ const linksList: EssentialLinkProps[] = [
     caption: 'Lista de pacientes',
     icon: 'people',
     to: '/patients'
+  },
+  {
+    title: 'Agenda',
+    caption: 'Agendamentos',
+    icon: 'event',
+    to: '/medical_sessions'
   }
 ]
 

@@ -20,18 +20,52 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         component: () => import('pages/IndexPage.vue'),
-      },
+      }
+    ],
+  },
+
+  {
+    path: '/patients',
+    component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
       {
-        path: 'patients',
+        path: '',
         component: () => import('pages/PatientsPage.vue'),
       },
       {
-        path: 'patients/create',
+        path: 'create',
         component: () => import('pages/PatientsCreatePage.vue'),
       },
       {
-        path: 'patients/:id',
+        path: ':id',
         component: () => import('pages/PatientsUpdatePage.vue'),
+      }
+    ],
+  },
+
+  {
+    path: '/medical_sessions',
+    component: () => import('layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        component: () => import('pages/MedicalSessionsPage.vue'),
+        name: 'medical-sessions-list',
+        props: true
+      },
+      {
+        path: 'create',
+        component: () => import('pages/MedicalSessionsCreatePage.vue'),
+        name:'medical-session-create',
+        props: true
+      },
+      {
+        path: ':id',
+        component: () => import('pages/MedicalSessionsCreatePage.vue'),
+        name:'medical-session-update',
+        props: true
       },
     ],
   },

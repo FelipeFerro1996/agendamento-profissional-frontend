@@ -100,6 +100,12 @@ const columns: QTableColumn[] = [
     align: 'right'
   },
   {
+    name: 'pago',
+    label: 'Pago',
+    field: row => row.agendamento?.paid ?? '',
+    align: 'right'
+  },
+  {
     name: 'acoes',
     label: '',
     field: 'acoes',
@@ -124,12 +130,12 @@ async function updateStatus(id: number, status: StatusMedicalSession, descricaoS
         if(axios.isAxiosError<ValidationErrorResponse>(error)){
             $q.notify({
                 type: 'negative',
-                message: error.response?.data.message ?? 'Erro ao atualizar o status do pedido'
+                message: error.response?.data.message ?? 'Erro ao atualizar o status do agendamento'
             })  
         }else{
             $q.notify({
                 type: 'negative',
-                message: 'Erro ao atualizar o status do pedido'
+                message: 'Erro ao atualizar o status do agendamento'
             })    
         }
 
@@ -150,6 +156,54 @@ const confirmUpdateStatusAgendamento = (id: number, status: StatusMedicalSession
         persistent: true,
     }).onOk(() => {
         void updateStatus(id, status, descricaoStatus)
+    })
+
+}
+
+async function updatePagamento(id: number, paid: boolean){
+    loading.value = true
+
+    const descricao = paid ? 'Marcada' : 'Desmarcado' 
+
+    try {
+        await update(id, {
+            paid
+        })
+        await fetchMedicalSessions(data_selecionada.value)
+        $q.notify({
+            type: 'positive',
+            message: `${descricao} como pago o agendamento`
+        })
+    } catch (error: unknown) {
+
+        if(axios.isAxiosError<ValidationErrorResponse>(error)){
+            $q.notify({
+                type: 'negative',
+                message: error.response?.data.message ?? 'Erro ao atualizar o agendamento'
+            })  
+        }else{
+            $q.notify({
+                type: 'negative',
+                message: 'Erro ao atualizar o agendamento'
+            })    
+        }
+
+
+    }finally {
+        loading.value = false
+    }
+}
+
+const alteraPagamaneto = (id:number, pago: boolean) => {
+    const descricao = pago ? "marcar" : "desmarcar"
+
+    $q.dialog({
+        title: "Alterar pagamento",
+        message: `Deseja ${descricao} como pago o agendamento`,
+        cancel: true,
+        persistent: true
+    }).onOk(() => {
+        void updatePagamento(id, pago)
     })
 
 }
@@ -266,6 +320,16 @@ const confirmUpdateStatusAgendamento = (id: number, status: StatusMedicalSession
                 </q-td>
             </template>
 
+            <!-- Pago -->
+            <template #body-cell-pago="props">
+                <q-td :props="props">
+                    <q-icon
+                        v-if="props.row.agendamento?.paid" 
+                        name="check" 
+                    />
+                </q-td>
+            </template>
+
             <!-- Ações -->
             <template #body-cell-acoes="props">
                 <q-td
@@ -274,6 +338,18 @@ const confirmUpdateStatusAgendamento = (id: number, status: StatusMedicalSession
                 >
 
                 <div v-if="props.row.ocupado" class="row justify-end no-wrap q-gutter-xs">
+
+                    <q-btn
+                        v-if="!props.row.agendamento?.paid"
+                        flat
+                        round
+                        dense
+                        color="primary"
+                        icon="attach_money"
+                        @click="alteraPagamaneto(props.row.agendamento.id, !props.row.agendamento.paid)"
+                    >
+                        <q-tooltip>Marcom como pago</q-tooltip>
+                    </q-btn>
 
                     <q-btn
                         flat

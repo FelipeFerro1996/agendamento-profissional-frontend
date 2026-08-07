@@ -28,7 +28,7 @@ export interface MedicalSessions{
     patient_id: number,
     session_date: string,
     session_time: string,
-    price?: number,
+    price?: number | undefined,
     status?: StatusMedicalSession,
     paid?: boolean,
     paid_at?: string,

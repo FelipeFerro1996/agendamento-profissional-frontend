@@ -2,7 +2,7 @@
 import { usePatient } from 'src/composables/usePatient';
 import type { MedicalSessions } from 'src/types/MedicalSessions';
 import type { Patient } from 'src/types/Patient';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const { fetchAllPatients, patients } = usePatient()
 
@@ -53,6 +53,43 @@ const filterPatients = (
   })
 }
 
+const precoFormatado = ref<string>('')
+
+watch(
+  () => model.value.price,
+  (valor) => {
+    if (valor === undefined || valor === null) {
+      precoFormatado.value = ''
+      return
+    }
+
+    precoFormatado.value = Number(valor).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  },
+  { immediate: true }
+)
+
+const formatarPreco = (valor: string | number | null) => {
+  const numeros = String(valor ?? '').replace(/\D/g, '')
+
+  if (!numeros) {
+    precoFormatado.value = ''
+    model.value.price = undefined
+    return
+  }
+
+  const numero = Number(numeros) / 100
+
+  precoFormatado.value = numero.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+
+  model.value.price = numero
+}
+
 </script>
 
 <template>
@@ -96,6 +133,17 @@ const filterPatients = (
             label="Paciente"
             :error="!!errors.patient_id"
             :error-message="errors.patient_id?.[0]"
+        />
+
+        <q-input
+            outlined
+            dense
+            :model-value="precoFormatado"
+            prefix="R$"
+            label="Valor"
+            :error="!!errors.price"
+            :error-message="errors.price?.[0]"
+            @update:model-value="formatarPreco"
         />
 
         <q-input 

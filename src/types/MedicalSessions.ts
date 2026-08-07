@@ -32,7 +32,7 @@ export interface MedicalSessions{
     status?: StatusMedicalSession,
     paid?: boolean,
     paid_at?: string,
-    notes?: Text
+    notes?: string
     data_formatada?: string
     patient?: Patient
 }

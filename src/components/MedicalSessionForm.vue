@@ -1,19 +1,39 @@
 <script setup lang="ts">
 import { usePatient } from 'src/composables/usePatient';
 import type { MedicalSessions } from 'src/types/MedicalSessions';
+import type { Patient } from 'src/types/Patient';
+import { computed } from 'vue';
 
 const { fetchAllPatients, patients } = usePatient()
 
 const model = defineModel<Partial<MedicalSessions>>({required: true})
 
-defineProps<{
+const props = defineProps<{
     loading?: boolean,
-    errors: Record<string, string[]>
+    errors: Record<string, string[]>,
+    patientSelect?: Patient | undefined,
+    editing: boolean
 }>()
 
 const emit = defineEmits<{
     submit: []
 }>()
+
+const patientOptions = computed(() => {
+  if (!props.patientSelect) {
+    return patients.value
+  }
+
+  const pacienteExiste = patients.value.some(
+    patient => patient.id === props.patientSelect?.id
+  )
+
+  if (pacienteExiste) {
+    return patients.value
+  }
+
+  return [props.patientSelect, ...patients.value]
+})
 
 const filterPatients = (
   val: string,
@@ -61,7 +81,7 @@ const filterPatients = (
 
         <q-select
             v-model="model.patient_id"
-            :options="patients"
+            :options="patientOptions"
             option-label="name"
             option-value="id"
             emit-value
@@ -72,9 +92,19 @@ const filterPatients = (
             @filter="filterPatients"
             outlined
             dense
+            :readonly="props.editing"
             label="Paciente"
             :error="!!errors.patient_id"
             :error-message="errors.patient_id?.[0]"
+        />
+
+        <q-input 
+            v-model="model.notes" 
+            filled 
+            autogrow
+            label="Anotações"
+            :error="!!errors.notes"
+            :error-message="errors.notes?.[0]"
         />
 
         <div class="row justify-end q-glutter-sm">

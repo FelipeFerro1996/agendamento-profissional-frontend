@@ -281,6 +281,7 @@ const confirmUpdateStatusAgendamento = (id: number, status: StatusMedicalSession
                         dense
                         color="primary"
                         icon="edit"
+                        :to="`/medical_sessions/${props.row.agendamento.id}`"
                     >
                         <q-tooltip>Editar</q-tooltip>
                     </q-btn>

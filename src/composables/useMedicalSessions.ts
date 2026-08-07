@@ -1,7 +1,7 @@
 import type { MedicalSessions } from "src/types/MedicalSessions";
 import { ref } from "vue";
 import { useApi } from "./useApi";
-import type { ApiResponseNotPagination } from "src/types/api";
+import type { ApiResponse, ApiResponseNotPagination } from "src/types/api";
 
 export function useMedicalSessions(){
 
@@ -13,7 +13,7 @@ export function useMedicalSessions(){
     const endpoint = '/medical_sessions'
 
     const list = (session_date: string = '') =>
-        get<ApiResponseNotPagination<MedicalSessions>>(`${endpoint}?session_date=${session_date}`)
+        get<ApiResponseNotPagination<MedicalSessions>>(`${endpoint}?session_date=${session_date}&status_not_in=cancelled`)
 
     const create = (data: Partial<MedicalSessions>) =>
         post<MedicalSessions, Partial<MedicalSessions>>(endpoint, data)
@@ -36,10 +36,14 @@ export function useMedicalSessions(){
     const update = (id: number, data: Partial<MedicalSessions>) =>
         put<MedicalSessions, Partial<MedicalSessions>>(`${endpoint}/${id}`, data)
 
+    const find = (id: number) => 
+        get<ApiResponse<MedicalSessions>>(`${endpoint}/${id}`)
+
     return {
         fetchMedicalSessions,
         create,
         update,
+        find,
         medical_sessions,
         loading
     }

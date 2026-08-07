@@ -17,10 +17,10 @@ export function usePatient() {
         get<ApiResponse<Patient>>(`${endpoint}/${id}`)
 
     const create = (data: Partial<Patient>) => 
-        post<Patient, Partial<Patient>>(endpoint, data)
+        post<ApiResponse<Patient>, Partial<Patient>>(endpoint, data)
 
     const update = (id: number, data: Partial<Patient>) =>
-        put<Patient, Partial<Patient>>(`${endpoint}/${id}`, data)
+        put<ApiResponse<Patient>, Partial<Patient>>(`${endpoint}/${id}`, data)
 
     const remove = (id: number) => 
             del<void>(`${endpoint}/${id}`)

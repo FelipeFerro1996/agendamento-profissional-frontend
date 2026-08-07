@@ -39,7 +39,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: ':id',
-        component: () => import('pages/PatientsUpdatePage.vue'),
+        component: () => import('pages/PatientsCreatePage.vue'),
       }
     ],
   },

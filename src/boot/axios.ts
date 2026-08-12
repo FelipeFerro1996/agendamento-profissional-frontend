@@ -2,8 +2,8 @@ import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://100.96.189.80:8083/api',
-  // baseURL: 'http://localhost/api',
+  // baseURL: 'http://100.96.189.80:8083/api',
+  baseURL: 'http://localhost/api',
   headers: {
     Accept: 'application/json'
   }
